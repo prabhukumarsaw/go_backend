@@ -1,12 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
+    --font-heading: var(--font-serif);
     --font-sans: var(--font-sans);
+    --font-serif: var(--font-serif);
+
+    /* ─── Sidebar Tokens ──────────────────────── */
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -15,11 +19,15 @@
     --color-sidebar-primary: var(--sidebar-primary);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar: var(--sidebar);
+
+    /* ─── Chart Tokens ────────────────────────── */
     --color-chart-5: var(--chart-5);
     --color-chart-4: var(--chart-4);
     --color-chart-3: var(--chart-3);
     --color-chart-2: var(--chart-2);
     --color-chart-1: var(--chart-1);
+
+    /* ─── Core Tokens ─────────────────────────── */
     --color-ring: var(--ring);
     --color-input: var(--input);
     --color-border: var(--border);
@@ -38,6 +46,8 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+
+    /* ─── Radius Scale ────────────────────────── */
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -45,85 +55,475 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+
+    /* ─── Status Colors ───────────────────────── */
+    --color-status-draft: var(--status-draft);
+    --color-status-review: var(--status-review);
+    --color-status-approved: var(--status-approved);
+    --color-status-published: var(--status-published);
+    --color-status-archived: var(--status-archived);
+    --color-status-breaking: var(--status-breaking);
+
+    /* ─── Surface Hierarchy ───────────────────── */
+    --color-surface-0: var(--surface-0);
+    --color-surface-1: var(--surface-1);
+    --color-surface-2: var(--surface-2);
+    --color-surface-3: var(--surface-3);
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.148 0.004 228.8);
+    --background: oklch(0.985 0.002 247);
+    --foreground: oklch(0.145 0.005 229);
     --card: oklch(1 0 0);
-    --card-foreground: oklch(0.148 0.004 228.8);
+    --card-foreground: oklch(0.145 0.005 229);
     --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.148 0.004 228.8);
-    --primary: oklch(0.852 0.199 91.936);
-    --primary-foreground: oklch(0.421 0.095 57.708);
-    --secondary: oklch(0.967 0.001 286.375);
-    --secondary-foreground: oklch(0.21 0.006 285.885);
-    --muted: oklch(0.963 0.002 197.1);
-    --muted-foreground: oklch(0.56 0.021 213.5);
-    --accent: oklch(0.963 0.002 197.1);
-    --accent-foreground: oklch(0.218 0.008 223.9);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.925 0.005 214.3);
-    --input: oklch(0.925 0.005 214.3);
-    --ring: oklch(0.723 0.014 214.4);
-    --chart-1: oklch(0.855 0.138 181.071);
-    --chart-2: oklch(0.704 0.14 182.503);
-    --chart-3: oklch(0.6 0.118 184.704);
-    --chart-4: oklch(0.511 0.096 186.391);
-    --chart-5: oklch(0.437 0.078 188.216);
+    --popover-foreground: oklch(0.145 0.005 229);
+    --primary: oklch(0.205 0.032 265);
+    --primary-foreground: oklch(0.985 0.002 247);
+    --secondary: oklch(0.96 0.003 264);
+    --secondary-foreground: oklch(0.205 0.032 265);
+    --muted: oklch(0.96 0.003 264);
+    --muted-foreground: oklch(0.55 0.014 264);
+    --accent: oklch(0.96 0.003 264);
+    --accent-foreground: oklch(0.205 0.032 265);
+    --destructive: oklch(0.577 0.245 27.3);
+    --border: oklch(0.922 0.004 264);
+    --input: oklch(0.922 0.004 264);
+    --ring: oklch(0.205 0.032 265);
+
+    /* ─── Chart ───────────────────────────────── */
+    --chart-1: oklch(0.646 0.222 41.1);
+    --chart-2: oklch(0.6 0.118 184.7);
+    --chart-3: oklch(0.398 0.07 227.4);
+    --chart-4: oklch(0.828 0.189 84.4);
+    --chart-5: oklch(0.769 0.188 70.1);
+
     --radius: 0.625rem;
-    --sidebar: oklch(0.987 0.002 197.1);
-    --sidebar-foreground: oklch(0.148 0.004 228.8);
-    --sidebar-primary: oklch(0.681 0.162 75.834);
-    --sidebar-primary-foreground: oklch(0.987 0.026 102.212);
-    --sidebar-accent: oklch(0.963 0.002 197.1);
-    --sidebar-accent-foreground: oklch(0.218 0.008 223.9);
-    --sidebar-border: oklch(0.925 0.005 214.3);
-    --sidebar-ring: oklch(0.723 0.014 214.4);
+
+    /* ─── Sidebar ─────────────────────────────── */
+    --sidebar: oklch(0.985 0.002 247);
+    --sidebar-foreground: oklch(0.145 0.005 229);
+    --sidebar-primary: oklch(0.205 0.032 265);
+    --sidebar-primary-foreground: oklch(0.985 0.002 247);
+    --sidebar-accent: oklch(0.96 0.003 264);
+    --sidebar-accent-foreground: oklch(0.205 0.032 265);
+    --sidebar-border: oklch(0.922 0.004 264);
+    --sidebar-ring: oklch(0.205 0.032 265);
+
+    /* ─── Status ──────────────────────────────── */
+    --status-draft: oklch(0.55 0.014 264);
+    --status-review: oklch(0.769 0.188 70.1);
+    --status-approved: oklch(0.723 0.191 149.6);
+    --status-published: oklch(0.646 0.222 41.1);
+    --status-archived: oklch(0.55 0.014 264);
+    --status-breaking: oklch(0.577 0.245 27.3);
+
+    /* ─── Surfaces ────────────────────────────── */
+    --surface-0: oklch(1 0 0);
+    --surface-1: oklch(0.985 0.002 247);
+    --surface-2: oklch(0.96 0.003 264);
+    --surface-3: oklch(0.94 0.004 264);
 }
 
 .dark {
-    --background: oklch(0.148 0.004 228.8);
-    --foreground: oklch(0.987 0.002 197.1);
-    --card: oklch(0.218 0.008 223.9);
-    --card-foreground: oklch(0.987 0.002 197.1);
-    --popover: oklch(0.218 0.008 223.9);
-    --popover-foreground: oklch(0.987 0.002 197.1);
-    --primary: oklch(0.795 0.184 86.047);
-    --primary-foreground: oklch(0.421 0.095 57.708);
-    --secondary: oklch(0.274 0.006 286.033);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.275 0.011 216.9);
-    --muted-foreground: oklch(0.723 0.014 214.4);
-    --accent: oklch(0.275 0.011 216.9);
-    --accent-foreground: oklch(0.987 0.002 197.1);
-    --destructive: oklch(0.704 0.191 22.216);
+    --background: oklch(0.13 0.01 264);
+    --foreground: oklch(0.94 0.004 264);
+    --card: oklch(0.17 0.014 264);
+    --card-foreground: oklch(0.94 0.004 264);
+    --popover: oklch(0.17 0.014 264);
+    --popover-foreground: oklch(0.94 0.004 264);
+    --primary: oklch(0.94 0.004 264);
+    --primary-foreground: oklch(0.205 0.032 265);
+    --secondary: oklch(0.22 0.02 264);
+    --secondary-foreground: oklch(0.94 0.004 264);
+    --muted: oklch(0.22 0.02 264);
+    --muted-foreground: oklch(0.6 0.02 264);
+    --accent: oklch(0.22 0.02 264);
+    --accent-foreground: oklch(0.94 0.004 264);
+    --destructive: oklch(0.704 0.191 22.2);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.56 0.021 213.5);
-    --chart-1: oklch(0.855 0.138 181.071);
-    --chart-2: oklch(0.704 0.14 182.503);
-    --chart-3: oklch(0.6 0.118 184.704);
-    --chart-4: oklch(0.511 0.096 186.391);
-    --chart-5: oklch(0.437 0.078 188.216);
-    --sidebar: oklch(0.218 0.008 223.9);
-    --sidebar-foreground: oklch(0.987 0.002 197.1);
-    --sidebar-primary: oklch(0.795 0.184 86.047);
-    --sidebar-primary-foreground: oklch(0.987 0.026 102.212);
-    --sidebar-accent: oklch(0.275 0.011 216.9);
-    --sidebar-accent-foreground: oklch(0.987 0.002 197.1);
+    --ring: oklch(0.556 0.016 286);
+
+    /* ─── Chart ───────────────────────────────── */
+    --chart-1: oklch(0.488 0.243 264.1);
+    --chart-2: oklch(0.696 0.17 162.5);
+    --chart-3: oklch(0.769 0.188 70.1);
+    --chart-4: oklch(0.627 0.265 303.9);
+    --chart-5: oklch(0.645 0.246 16.4);
+
+    /* ─── Sidebar ─────────────────────────────── */
+    --sidebar: oklch(0.15 0.012 264);
+    --sidebar-foreground: oklch(0.94 0.004 264);
+    --sidebar-primary: oklch(0.488 0.243 264.1);
+    --sidebar-primary-foreground: oklch(0.94 0.004 264);
+    --sidebar-accent: oklch(0.22 0.02 264);
+    --sidebar-accent-foreground: oklch(0.94 0.004 264);
     --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.56 0.021 213.5);
+    --sidebar-ring: oklch(0.556 0.016 286);
+
+    /* ─── Status ──────────────────────────────── */
+    --status-draft: oklch(0.6 0.02 264);
+    --status-review: oklch(0.828 0.189 84.4);
+    --status-approved: oklch(0.723 0.191 149.6);
+    --status-published: oklch(0.696 0.17 162.5);
+    --status-archived: oklch(0.6 0.02 264);
+    --status-breaking: oklch(0.704 0.191 22.2);
+
+    /* ─── Surfaces ────────────────────────────── */
+    --surface-0: oklch(0.13 0.01 264);
+    --surface-1: oklch(0.15 0.012 264);
+    --surface-2: oklch(0.17 0.014 264);
+    --surface-3: oklch(0.22 0.02 264);
 }
 
+/* ─── Base Styles ─────────────────────────────── */
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
     }
-  html {
-    @apply font-sans;
+    html {
+        @apply font-sans scroll-smooth;
     }
+
+    /* ─── Typography Scale ────────────────────── */
+    .text-display {
+        @apply text-4xl font-bold tracking-tight leading-tight;
+    }
+    .text-headline {
+        @apply text-2xl font-bold tracking-tight leading-snug;
+    }
+    .text-title {
+        @apply text-lg font-semibold leading-snug;
+    }
+    .text-body {
+        @apply text-base leading-relaxed;
+    }
+    .text-caption {
+        @apply text-sm text-muted-foreground leading-normal;
+    }
+    .text-overline {
+        @apply text-xs font-semibold uppercase tracking-widest text-muted-foreground;
+    }
+}
+
+/* ─── Article Content Styles ──────────────────── */
+@layer components {
+    .article-content {
+        max-width: 65ch;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .article-content h1 {
+        @apply text-4xl font-bold tracking-tight mb-6 mt-8;
+    }
+    .article-content h2 {
+        @apply text-2xl font-bold tracking-tight mb-4 mt-8;
+    }
+    .article-content h3 {
+        @apply text-lg font-semibold mb-3 mt-6;
+    }
+    .article-content p {
+        @apply text-base leading-relaxed mb-4 text-foreground/90;
+    }
+    .article-content blockquote {
+        @apply border-l-4 border-primary/40 pl-4 py-1 italic text-muted-foreground my-6;
+    }
+    .article-content img {
+        @apply rounded-lg my-6 w-full h-auto;
+    }
+    .article-content figure {
+        @apply my-6;
+    }
+    .article-content figcaption {
+        @apply text-xs text-muted-foreground mt-2 text-center;
+    }
+}
+
+/* ─── Custom Scrollbar ────────────────────────── */
+@layer base {
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        @apply bg-border rounded-full;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-muted-foreground/30;
+    }
+}
+
+/* ─── Micro Animations ───────────────────────── */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes tickerScroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+@layer utilities {
+    .animate-fade-in-up {
+        animation: fadeInUp 0.5s ease-out both;
+    }
+    .animate-shimmer {
+        background: linear-gradient(90deg, transparent 25%, oklch(0.95 0.003 264 / 50%) 50%, transparent 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+    .animate-slide-in {
+        animation: slideInLeft 0.4s ease-out both;
+    }
+    .animate-ticker {
+        animation: tickerScroll 30s linear infinite;
+    }
+    .font-serif {
+        font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+    }
+    .stagger-1 { animation-delay: 0.05s; }
+    .stagger-2 { animation-delay: 0.1s; }
+    .stagger-3 { animation-delay: 0.15s; }
+    .stagger-4 { animation-delay: 0.2s; }
+    .stagger-5 { animation-delay: 0.25s; }
+    .stagger-6 { animation-delay: 0.3s; }
+}
+
+/* ─── Glass Card ─────────────────────────────── */
+@layer components {
+    .glass-card {
+        @apply bg-card/80 backdrop-blur-md border border-border/60 shadow-sm;
+    }
+}
+
+/* ─── Print Styles ────────────────────────────── */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    body {
+        background: white;
+        color: black;
+    }
+}
+
+/* ─── TipTap ProseMirror Responsive Tables & Interactive Elements ─── */
+.ProseMirror .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 1.5rem 0;
+    padding-bottom: 0.5rem;
+    border-radius: var(--radius-md);
+}
+
+.ProseMirror table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    min-width: 480px;
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+.ProseMirror table td,
+.ProseMirror table th {
+    min-width: 100px;
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    vertical-align: top;
+    box-sizing: border-box;
+    position: relative;
+    font-size: 0.8125rem;
+}
+
+.ProseMirror table th {
+    font-weight: 600;
+    text-align: left;
+    background-color: var(--muted);
+    color: var(--foreground);
+}
+
+.ProseMirror table .selectedCell:after {
+    z-index: 2;
+    position: absolute;
+    content: "";
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(59, 130, 246, 0.15);
+    pointer-events: none;
+}
+
+.ProseMirror table .column-resize-handle {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    bottom: -2px;
+    width: 4px;
+    background-color: var(--primary);
+    pointer-events: none;
+}
+
+/* Task lists (Checklists) */
+ul[data-type="taskList"] {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+ul[data-type="taskList"] li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+ul[data-type="taskList"] li > label {
+    user-select: none;
+    margin-top: 0.2rem;
+}
+
+ul[data-type="taskList"] li > div {
+    flex: 1 1 auto;
+}
+
+/* ─── TipTap Resizable Image & Float Overrides ─── */
+.ProseMirror img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    transition: box-shadow 0.2s ease;
+}
+
+.ProseMirror img.ProseMirror-selectednode {
+    outline: 2px solid var(--primary);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+/* ─── TipTap Multi-Column Layout ─── */
+.ProseMirror .tiptap-columns {
+    display: grid;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    clear: both;
+}
+
+.ProseMirror .tiptap-column {
+    min-width: 0;
+}
+
+/* ─── TipTap Table Width Normalization & Responsive Wrapper ─── */
+.ProseMirror .tableWrapper {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background-color: var(--card);
+}
+
+.ProseMirror table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin: 0;
+    overflow: hidden;
+}
+
+.ProseMirror table td,
+.ProseMirror table th {
+    min-width: 50px;
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    vertical-align: top;
+    box-sizing: border-box;
+    position: relative;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    transition: background-color 0.15s ease;
+}
+
+.ProseMirror table th {
+    font-weight: 600;
+    text-align: left;
+    background-color: var(--muted);
+    color: var(--foreground);
+}
+
+.ProseMirror table .selectedCell:after {
+    z-index: 2;
+    position: absolute;
+    content: "";
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(59, 130, 246, 0.15);
+    pointer-events: none;
+}
+
+.ProseMirror table .column-resize-handle {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    bottom: -2px;
+    width: 6px;
+    background-color: var(--primary);
+    pointer-events: none;
+    z-index: 20;
+    border-radius: 2px;
+}
+
+.ProseMirror.resize-cursor,
+.ProseMirror.resize-cursor * {
+    cursor: col-resize !important;
+}
+
+/* ─── Clearfix for Floated Images ─── */
+.ProseMirror::after,
+.ProseMirror p::after {
+    content: "";
+    display: table;
+    clear: both;
 }
