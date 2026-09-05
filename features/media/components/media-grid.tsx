@@ -68,7 +68,7 @@ export function getMediaUrl(item: MediaItem): string {
   if (item.url) {
     return item.url
       .replace(/\\/g, "/")
-      .replace(/\/media\/tenant_/, "/uploads/tenant_");
+      .replace(/\/media\//, "/uploads/");
   }
   return "";
 }

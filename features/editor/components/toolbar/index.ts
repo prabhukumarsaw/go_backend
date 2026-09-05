@@ -13,3 +13,6 @@ export * from "./list-and-block-tools";
 export * from "./alignment-tools";
 export * from "./fullscreen-button";
 export * from "./history-tools";
+export * from "./audio-popover";
+export * from "./video-popover";
+export * from "./citation-popover";

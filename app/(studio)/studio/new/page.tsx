@@ -77,13 +77,21 @@ export default function NewArticlePage() {
       .replace(/(^-|-$)+/g, "")
     : "";
 
+  const onInvalid = (errors: any) => {
+    console.warn("Validation error on create:", errors);
+    const firstField = Object.keys(errors)[0];
+    const firstError = errors[firstField];
+    toast.error(firstError?.message || `Please complete required fields (${firstField})`);
+  };
+
   const onSubmit = async (data: ArticleFormData) => {
     try {
+      const currentBody = editorRef.current ? editorRef.current.getJSON() : (editorContent || { type: "doc", content: [] });
       const response = await createArticle.mutateAsync({
         title: data.title,
         language: data.language || "en",
         excerpt: data.excerpt,
-        body: editorContent || { type: "doc", content: [] },
+        body: currentBody,
         is_breaking: data.is_breaking,
         is_featured: data.is_featured,
         is_national: data.is_national,
@@ -99,8 +107,16 @@ export default function NewArticlePage() {
       if (publishIntent && newId) {
         // Save → immediately publish
         await transition.mutateAsync({ id: newId, status: "published" });
-        toast.success("Article published successfully!");
-        router.push(`/studio/${newId}`);
+        toast.success("Article published successfully!", {
+          description: "Your story is now live for readers.",
+          action: slug
+            ? {
+                label: "View Live",
+                onClick: () => window.open(`/news/${slug}`, "_blank"),
+              }
+            : undefined,
+        });
+        router.push("/panel/articles");
       } else if (newId) {
         toast.success("Draft saved.");
         router.push(`/studio/${newId}`);
@@ -117,7 +133,7 @@ export default function NewArticlePage() {
   const isPending = createArticle.isPending || transition.isPending;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="min-h-[calc(100vh-3rem)] flex flex-col bg-background/50">
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="min-h-[calc(100vh-3rem)] flex flex-col bg-background/50">
       {/* ─── Studio Top Action Bar ─── */}
       <div className="sticky top-0 z-30 flex h-12 items-center justify-between border-b bg-background/95 px-3 sm:px-6 backdrop-blur-md">
         <div className="flex items-center gap-2 sm:gap-3">
@@ -204,22 +220,27 @@ export default function NewArticlePage() {
       <MediaPicker
         open={isMediaPickerOpen}
         onOpenChange={setIsMediaPickerOpen}
-        onSelect={({ url, alt }) => {
+        onSelect={({ url, alt, isVideo }) => {
           if (mediaPickerTarget === "featured") {
             form.setValue("featured_image", url, { shouldDirty: true, shouldValidate: true });
           } else if (mediaPickerTarget === "editor") {
             if (editorRef.current) {
               const ed = editorRef.current;
-              ed.chain()
-                .focus()
-                .insertContent({
-                  type: "image",
-                  attrs: {
-                    src: url,
-                    alt: alt || "",
-                  },
-                })
-                .run();
+              const isVideoFile = isVideo || /\.(mp4|webm|mov)$/i.test(url);
+              if (isVideoFile) {
+                ed.chain().focus().setVideo({ src: url, title: alt || "Short Video" }).run();
+              } else {
+                ed.chain()
+                  .focus()
+                  .insertContent({
+                    type: "image",
+                    attrs: {
+                      src: url,
+                      alt: alt || "",
+                    },
+                  })
+                  .run();
+              }
             }
           }
         }}

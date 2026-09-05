@@ -1,229 +1,303 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 import { useQuery } from "@tanstack/react-query";
+import { listCategoriesTree } from "@/lib/api/articles";
 import {
   IconSearch,
-  IconMoon,
-  IconSun,
-  IconMenu2,
-  IconPencil,
-  IconMapPin,
-  IconCalendar,
-  IconCommand,
+  IconCloud,
 } from "@tabler/icons-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { publicNavigation } from "@/config/navigation";
-import { useAuth } from "@/components/providers/auth-provider";
 import { useTenant } from "@/components/providers/tenant-provider";
-import { listCategories } from "@/lib/api/articles";
-import { useState, useEffect } from "react";
+import {
+  NavbarCategoryDropdown,
+  NavbarNationalMegaMenu,
+  NavbarCityMegaMenu,
+  NavbarMoreMenu,
+  NavbarNetworkMenu,
+  NavbarMobileDrawer,
+  NavbarTrendingBar,
+  NavbarSearchDialog,
+} from "./navbar";
+import type { Category } from "@/types/content";
+
+const liveTvDropdownItems = [
+  { title: "लाइव टीवी स्ट्रीम (Live)", href: "/live", badge: "LIVE" },
+  { title: "प्राइम टाइम शो (Prime Time)", href: "/live?show=primetime" },
+  { title: "न्यूज़ बुलेटिन (Bulletins)", href: "/live?show=bulletin" },
+  { title: "खास इंटरव्यू (Interviews)", href: "/live?show=interview" },
+];
+
+const breakingDropdownItems = [
+  { title: "ताज़ा बड़ी खबरें (Breaking)", href: "/", badge: "NEW" },
+  { title: "टॉप 10 सुर्खियां (Top 10)", href: "/brief" },
+  { title: "वायरल व ट्रेंडिंग (Viral)", href: "/viral" },
+  { title: "देशभर की हलचल (National)", href: "/national" },
+];
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { resolvedTheme, setTheme } = useTheme();
-  const { isAuthenticated, isStaff } = useAuth();
-  const { siteName, logoUrl, tenants, activeTenant, setActiveTenant } = useTenant();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [currentDateStr, setCurrentDateStr] = useState<string>("");
+  const { siteName, logoUrl } = useTenant();
 
-  useEffect(() => {
-    const now = new Date();
-    setCurrentDateStr(
-      now.toLocaleDateString("en-IN", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    );
-  }, []);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [liveDateStr, setLiveDateStr] = useState("September 04, 2026 08:20 pm IST");
 
-  // Fetch dynamic categories from Go backend
-  const { data: categoriesData } = useQuery({
-    queryKey: ["categories"],
-    queryFn: () => listCategories(),
+  // Dynamic categories tree from Go backend
+  const { data: treeData } = useQuery({
+    queryKey: ["categories-tree"],
+    queryFn: () => listCategoriesTree(),
+    staleTime: 5 * 60 * 1000,
   });
 
-  const categories = categoriesData?.data || [];
+  const allCategories: Category[] = treeData?.data || [];
 
-  // Build primary nav items dynamically from Level 1 root categories
-  const primaryCategories = categories.filter((c) => !c.level || c.level === 1);
+  // Match backend categories to navigation desks
+  const sportsCategory = allCategories.find((c) => c.slug === "sports");
+  const businessCategory = allCategories.find((c) => c.slug === "business");
+  const techCategory = allCategories.find((c) => c.slug === "technology");
 
-  const navItems = [
-    { title: "Home", href: "/" },
-    ...(primaryCategories.length > 0
-      ? primaryCategories.map((cat) => ({
-          title: cat.name,
-          href: `/${cat.slug}`,
-        }))
-      : publicNavigation.filter((item) => item.href !== "/")),
-  ];
+  // Overflow categories that flow into the ☰ ⌵ More Menu
+  const overflowCategories = allCategories.filter(
+    (c) => !["national", "states", "jharkhand", "bihar", "sports", "entertainment", "business", "technology", "lifestyle"].includes(c.slug)
+  );
+
+  useEffect(() => {
+    setMounted(true);
+    const updateDateTime = () => {
+      const now = new Date();
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      const month = monthNames[now.getMonth()];
+      const day = String(now.getDate()).padStart(2, "0");
+      const year = now.getFullYear();
+
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const ampm = hours >= 12 ? "pm" : "am";
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const formattedHours = String(hours).padStart(2, "0");
+
+      setLiveDateStr(`${month} ${day}, ${year} ${formattedHours}:${minutes} ${ampm} IST`);
+    };
+
+    updateDateTime();
+    const clockInterval = setInterval(updateDateTime, 30000);
+
+    return () => {
+      clearInterval(clockInterval);
+    };
+  }, []);
+
+  // Underline helper for canonical navigation
+  const getNavLinkClass = (isActive: boolean) =>
+    `relative flex items-center py-2 px-2 xl:px-2.5 text-[13.5px] xl:text-[14px] font-semibold font-hindi whitespace-nowrap transition-all after:content-[''] after:absolute after:bottom-0 after:left-1.5 after:right-1.5 after:h-[2.5px] after:bg-red-500 after:transition-all focus:outline-hidden ${isActive
+      ? "text-white font-bold after:opacity-100 after:scale-x-100"
+      : "text-white/90 hover:text-white after:opacity-0 hover:after:opacity-100"
+    }`;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-xs">
-      {/* ─── Micro Top Utility Bar (Date + Edition Indicator) ─── */}
-      <div className="border-b border-border/40 bg-muted/30 text-[11px] text-muted-foreground hidden sm:block">
-        <div className="mx-auto flex h-7 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 font-mono">
-          <div className="flex items-center gap-2">
-            <IconCalendar className="h-3 w-3 text-primary/70" />
-            <span>{currentDateStr || "National Editorial Wire"}</span>
-          </div>
+    <>
+      <header className="sticky top-0 z-50 w-full bg-[#072e2a] border-b border-[#0e443e] shadow-lg select-none overflow-visible">
+        {/* ─── Main Full-Width Square Broadcast Navbar ─── */}
+        <div className="w-full overflow-visible">
+          <div className="relative mx-auto flex h-14 sm:h-[58px] max-w-[1536px] items-center justify-between px-3 sm:px-5 lg:px-6 text-white overflow-visible">
 
-          <div className="flex items-center gap-3">
-            {/* Edition Indicator */}
-            <div className="flex items-center gap-1.5">
-              <IconMapPin className="h-3 w-3 text-rose-500" />
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/80">
-                Edition:
-              </span>
-              <span className="font-semibold text-foreground">
-                All India (National Desk)
-              </span>
-            </div>
+            {/* ─── LEFT: Menu + Absolute Oversized Logo (AajTak style) ─── */}
+            <div className="flex items-center shrink-0">
+              {/* Hamburger */}
+              <NavbarMobileDrawer />
 
-            <span className="text-border">|</span>
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live News Wire
-            </span>
-          </div>
-        </div>
-      </div>
+              {/* ─── Responsive Logo:
+                  Mobile: cleanly contained inside navbar (h-10 w-10 / 40px)
+                  Desktop (sm+): oversized absolute (h-[90px] w-[90px]) overflowing into the trending bar ─── */}
+              <div className="relative ml-2 sm:ml-1.5 shrink-0 sm:self-stretch flex items-center">
+                {/* Spacer on sm+: holds 90px room in flex row */}
+                <div className="hidden sm:block sm:w-[90px] h-full" aria-hidden="true" />
 
-      {/* ─── Main Branding Bar ─── */}
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Mobile hamburger */}
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetTrigger
-            render={
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <IconMenu2 className="h-5 w-5" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            }
-          />
-          <SheetContent side="left" className="w-72 p-0">
-            <div className="flex h-14 items-center border-b px-4">
-              <Link
-                href="/"
-                className="text-lg font-bold tracking-tight font-serif"
-                onClick={() => setMobileOpen(false)}
-              >
-                {siteName}
-              </Link>
-            </div>
-            <nav className="grid gap-1 p-4">
-              {navItems.map((item, idx) => (
+                {/* Mobile: inline relative link. Desktop: absolute top-0 z-20. */}
                 <Link
-                  key={`${item.href}-${idx}`}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
-                    pathname === item.href
-                      ? "bg-accent font-semibold text-accent-foreground"
-                      : "text-muted-foreground"
-                  }`}
+                  href="/"
+                  className="sm:absolute sm:top-0 sm:left-0 z-20 group focus:outline-hidden flex items-center"
+                  aria-label={`${siteName || "Naxatra News"} - Home`}
                 >
-                  {item.title}
+                  <div className="relative h-10 w-10 sm:h-[90px] sm:w-[90px] drop-shadow-xl group-hover:scale-[1.03] transition-transform duration-200">
+                    <Image
+                      src={logoUrl || "/assets/logo.png"}
+                      alt={siteName || "Naxatra"}
+                      fill
+                      sizes="(max-width: 640px) 40px, 90px"
+                      className="object-contain"
+                      priority
+                    />
+                  </div>
                 </Link>
-              ))}
-            </nav>
-          </SheetContent>
-        </Sheet>
+              </div>
+            </div>
 
-        {/* Dynamic Logo & Title */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 text-2xl font-black tracking-tight font-serif hover:opacity-90 transition-opacity"
-          >
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={siteName} className="h-8 w-auto object-contain" />
-            ) : (
-              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold shadow-xs">
-                N
-              </span>
-            )}
-            <span>{siteName}</span>
-          </Link>
-
-          {activeTenant && (
-            <Badge variant="outline" className="hidden xl:inline-flex text-[10px] font-mono uppercase bg-muted/40">
-              {activeTenant.name}
-            </Badge>
-          )}
-        </div>
-
-        {/* Actions Strip */}
-        <div className="flex items-center gap-1.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground h-8 px-2.5"
-            render={<Link href="/search" />}
-          >
-            <IconSearch className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Search stories...</span>
-            <kbd className="pointer-events-none hidden h-4 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[9px] font-medium opacity-100 md:flex">
-              <IconCommand className="h-2.5 w-2.5" />K
-            </kbd>
-          </Button>
-
-          <Button variant="ghost" size="icon" className="sm:hidden" render={<Link href="/search" />}>
-            <IconSearch className="h-4 w-4" />
-            <span className="sr-only">Search</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() =>
-              setTheme(resolvedTheme === "dark" ? "light" : "dark")
-            }
-          >
-            <IconSun className="h-4 w-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-            <IconMoon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-
-          {isAuthenticated && isStaff ? (
-            <Button variant="default" size="sm" className="ml-2 font-semibold text-xs" render={<Link href="/panel/dashboard" />}>
-              <IconPencil className="mr-1.5 h-3.5 w-3.5" />
-              Studio
-            </Button>
-          ) : (
-            <Button variant="outline" size="sm" className="ml-2 text-xs font-semibold" render={<Link href="/login" />}>
-              Sign in
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* ─── Navigation bar — desktop ─── */}
-      <nav className="mx-auto hidden max-w-7xl border-t border-border/40 md:block overflow-x-auto scrollbar-none">
-        <div className="flex items-center gap-6 px-4 sm:px-6 lg:px-8">
-          {navItems.map((item, idx) => (
-            <Link
-              key={`${item.href}-${idx}`}
-              href={item.href}
-              className={`relative py-2.5 text-xs uppercase tracking-wider font-semibold transition-colors whitespace-nowrap ${
-                pathname === item.href
-                  ? "text-primary border-b-2 border-primary -mb-px font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+            {/* ─── CENTER: Canonical Nav Desks with Dynamic Subcategories ─── */}
+            <nav
+              className="hidden xl:flex items-center gap-1 lg:gap-1.5 px-2 overflow-visible"
+              aria-label="Primary Navigation"
             >
-              {item.title}
-            </Link>
-          ))}
+              {/* 1. 🔴 LIVE टीवी ⌵ */}
+              <NavbarCategoryDropdown
+                label="LIVE टीवी"
+                href="/live"
+                items={liveTvDropdownItems}
+                isActive={pathname === "/live"}
+                isLive
+              />
+
+              {/* 2. ताज़ातरीन ⌵ */}
+              <NavbarCategoryDropdown
+                label="ताज़ातरीन"
+                href="/"
+                items={breakingDropdownItems}
+                isActive={pathname === "/"}
+              />
+
+              {/* 3. देश ⌵ (Dynamic National Mega Menu) */}
+              <NavbarNationalMegaMenu isActive={pathname === "/national"} />
+
+              {/* 4. झारखंड ⌵ (Dynamic Jharkhand & District Sub-Desks Mega Menu) */}
+              <NavbarCityMegaMenu
+                label="झारखंड"
+                parentSlug="jharkhand"
+                isActive={pathname === "/jharkhand" || pathname.startsWith("/jharkhand")}
+              />
+
+              {/* 5. बिहार ⌵ (Dynamic Bihar & 33 District Sub-Desks Mega Menu) */}
+              <NavbarCityMegaMenu
+                label="बिहार"
+                parentSlug="bihar"
+                isActive={pathname === "/bihar" || pathname.startsWith("/bihar")}
+              />
+
+              {/* 6. क्रिकेट / खेल ⌵ (Dynamic Sports Subcategories) */}
+              {sportsCategory?.children && sportsCategory.children.length > 0 ? (
+                <NavbarCategoryDropdown
+                  label="क्रिकेट"
+                  href="/sports"
+                  items={sportsCategory.children.map((sub) => ({
+                    title: sub.name,
+                    href: `/sports?sub=${sub.slug}`,
+                  }))}
+                  isActive={pathname.startsWith("/sports")}
+                />
+              ) : (
+                <Link href="/sports" className={getNavLinkClass(pathname === "/sports")}>
+                  क्रिकेट
+                </Link>
+              )}
+
+              {/* 7. फटाफट */}
+              <Link href="/brief" className={getNavLinkClass(pathname === "/brief")}>
+                फटाफट
+              </Link>
+
+              {/* 8. मनोरंजन */}
+              <Link
+                href="/entertainment"
+                className={getNavLinkClass(pathname === "/entertainment")}
+              >
+                मनोरंजन
+              </Link>
+
+              {/* 9. बिजनेस ⌵ (Dynamic Business Subcategories) */}
+              {businessCategory?.children && businessCategory.children.length > 0 ? (
+                <NavbarCategoryDropdown
+                  label="बिजनेस"
+                  href="/business"
+                  items={businessCategory.children.map((sub) => ({
+                    title: sub.name,
+                    href: `/business?sub=${sub.slug}`,
+                  }))}
+                  isActive={pathname.startsWith("/business")}
+                />
+              ) : (
+                <Link href="/business" className={getNavLinkClass(pathname === "/business")}>
+                  बिजनेस
+                </Link>
+              )}
+
+              {/* 10. टेक ⌵ (Dynamic Tech Subcategories) */}
+              {techCategory?.children && techCategory.children.length > 0 ? (
+                <NavbarCategoryDropdown
+                  label="टेक"
+                  href="/technology"
+                  items={techCategory.children.map((sub) => ({
+                    title: sub.name,
+                    href: `/technology?sub=${sub.slug}`,
+                  }))}
+                  isActive={pathname.startsWith("/technology")}
+                />
+              ) : (
+                <Link href="/technology" className={getNavLinkClass(pathname === "/technology")}>
+                  टेक
+                </Link>
+              )}
+
+              {/* 11. लाइफस्टाइल */}
+              <Link
+                href="/lifestyle"
+                className={getNavLinkClass(pathname === "/lifestyle")}
+              >
+                लाइफस्टाइल
+              </Link>
+
+              {/* 12. ☰ ⌵ (More Menu with dynamic backend overflow categories) */}
+              <NavbarMoreMenu categories={overflowCategories} />
+            </nav>
+
+            {/* ─── RIGHT: Search + Date/Time + Weather + 9-Dots App Grid Menu ─── */}
+            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+              {/* Search Icon Button */}
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/10 transition-colors focus:outline-hidden"
+                aria-label="Search stories"
+                title="खोजें (Ctrl+K)"
+              >
+                <IconSearch className="h-[18px] w-[18px]" />
+              </button>
+
+              <span className="hidden md:inline text-white/20 text-xs">|</span>
+
+              {/* Date/Time + Weather/AQI */}
+              <div className="hidden md:flex flex-col items-end leading-tight text-[10.5px] text-white/80 font-sans">
+                <span suppressHydrationWarning className="font-medium text-white/90">
+                  {mounted ? liveDateStr : "September 05, 2026 IST"}
+                </span>
+                <div className="flex items-center gap-1.5 font-medium text-white">
+                  <span>दिल्ली</span>
+                  <IconCloud className="h-3 w-3 text-emerald-300" />
+                  <span>27° C</span>
+                  <span className="text-white/30">|</span>
+                  <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1 py-0.2 rounded text-[9.5px] font-bold">
+                    AQI 71
+                  </span>
+                </div>
+              </div>
+
+              {/* 9-Dots "Our Network" & Apps Popover */}
+              <NavbarNetworkMenu />
+            </div>
+          </div>
         </div>
-      </nav>
-    </header>
+
+        {/* ─── Global Search Modal ─── */}
+        <NavbarSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+      </header>
+
+      {/* ─── Special Links / Trending Ticker ─── sits BELOW sticky navbar, scrolls with page ─── */}
+      <NavbarTrendingBar />
+    </>
   );
 }
-

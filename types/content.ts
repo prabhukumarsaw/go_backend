@@ -12,7 +12,6 @@ export type ArticleStatus =
 export interface Article {
   id: string;
   story_id?: string;
-  tenant_id?: number;
   district_id?: number;
   district_name?: string;
   language: string;
@@ -72,7 +71,6 @@ export interface ArticleListItem {
 
 export interface Category {
   id: number;
-  tenant_id?: number;
   parent_id?: number | null;
   level?: number;
   name: string;

@@ -1,4 +1,4 @@
-import { Inter, Playfair_Display, Geist_Mono } from "next/font/google";
+import { Inter, Playfair_Display, Geist_Mono, Mukta } from "next/font/google";
 
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -27,6 +27,13 @@ const playfair = Playfair_Display({
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
+});
+
+const mukta = Mukta({
+  subsets: ["devanagari", "latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-hindi",
+  display: "swap",
 });
 
 export const metadata = {

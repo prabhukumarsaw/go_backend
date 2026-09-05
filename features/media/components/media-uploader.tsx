@@ -37,11 +37,16 @@ export function MediaUploader({
       return;
     }
 
+    const isVideo =
+      file.type.startsWith("video/") ||
+      /\.(mp4|webm)$/i.test(file.name);
+    const targetFolder = isVideo ? "videos" : folder;
+
     try {
-      await upload.mutateAsync({ file, category, folder });
+      await upload.mutateAsync({ file, category, folder: targetFolder });
       await queryClient.invalidateQueries({ queryKey: ["media"] });
       await queryClient.refetchQueries({ queryKey: ["media"] });
-      toast.success("Asset uploaded successfully!");
+      toast.success(isVideo ? "Short video uploaded to videos folder!" : "Asset uploaded successfully!");
       if (onSuccess) onSuccess();
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err: any) {
@@ -72,7 +77,10 @@ export function MediaUploader({
         <input
           ref={fileInputRef}
           type="file"
-          accept={siteConfig.media.acceptedImageTypes.join(",")}
+          accept={[
+            ...siteConfig.media.acceptedImageTypes,
+            ...siteConfig.media.acceptedVideoTypes,
+          ].join(",")}
           onChange={(e) => handleFiles(e.target.files)}
           className="hidden"
         />
@@ -90,7 +98,7 @@ export function MediaUploader({
             {upload.isPending ? "Uploading file…" : "Click or drag & drop to upload"}
           </p>
           <p className="text-xs text-muted-foreground">
-            PNG, JPG, WebP, GIF up to 20MB
+            Images (JPG, PNG, WebP) & Short Videos (MP4, WebM) up to 20MB
           </p>
         </div>
       </div>

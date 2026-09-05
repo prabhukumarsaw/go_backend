@@ -3,7 +3,6 @@
 
 export interface Role {
   id: number;
-  tenant_id: number;
   name: string;
   description: string;
   is_system: boolean;
@@ -42,6 +41,5 @@ export interface RolePermission {
 }
 
 export interface UserRoleAssignment {
-  tenant_id: number;
   role_id: number;
 }

@@ -3,8 +3,6 @@ import { apiClient, type ApiResponse } from "./client";
 export interface Employee {
   id: number;
   user_id: number;
-  tenant_id: number;
-  tenant_name?: string;
   employee_code: string;
   display_name: string;
   email: string;
@@ -34,7 +32,6 @@ export interface OnboardEmployeePayload {
   phone: string;
   password?: string;
   avatar_url?: string;
-  tenant_id?: number;
   employee_code: string;
   department: string;
   designation: string;
@@ -48,16 +45,12 @@ export interface OnboardEmployeePayload {
 }
 
 export async function listEmployees(
-  tenantIdOrDept?: number | string,
-  departmentOrSearch?: string
+  department?: string,
+  search?: string
 ): Promise<ApiResponse<Employee[]>> {
   const params: Record<string, string | number> = {};
-  if (typeof tenantIdOrDept === "string") {
-    if (tenantIdOrDept !== "all") params.department = tenantIdOrDept;
-    if (departmentOrSearch) params.q = departmentOrSearch;
-  } else {
-    if (departmentOrSearch && departmentOrSearch !== "all") params.department = departmentOrSearch;
-  }
+  if (department && department !== "all") params.department = department;
+  if (search) params.q = search;
 
   return apiClient.get<ApiResponse<Employee[]>>("/admin/employees", params);
 }

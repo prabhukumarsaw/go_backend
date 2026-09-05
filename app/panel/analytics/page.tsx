@@ -180,12 +180,12 @@ export default function AnalyticsPage() {
                   </TableHeader>
                   <TableBody>
                     {overview.state_distribution?.map((region, idx) => (
-                      <TableRow key={region.region_id || region.tenant_id || idx}>
+                      <TableRow key={region.region_id || idx}>
                         <TableCell className="font-semibold text-xs flex items-center gap-2">
                           <Badge variant="outline" className="font-mono text-[10px]">
                             #{idx + 1}
                           </Badge>
-                          <span>{region.region_name || region.tenant_name || "National"}</span>
+                          <span>{region.region_name || "National"}</span>
                         </TableCell>
                         <TableCell className="text-xs font-mono">
                           {region.articles}

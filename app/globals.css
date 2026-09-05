@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Khand:wght@500;600;700&family=Mukta:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -213,33 +214,11 @@
 /* ─── Article Content Styles ──────────────────── */
 @layer components {
     .article-content {
-        max-width: 65ch;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .article-content h1 {
-        @apply text-4xl font-bold tracking-tight mb-6 mt-8;
-    }
-    .article-content h2 {
-        @apply text-2xl font-bold tracking-tight mb-4 mt-8;
-    }
-    .article-content h3 {
-        @apply text-lg font-semibold mb-3 mt-6;
-    }
-    .article-content p {
-        @apply text-base leading-relaxed mb-4 text-foreground/90;
-    }
-    .article-content blockquote {
-        @apply border-l-4 border-primary/40 pl-4 py-1 italic text-muted-foreground my-6;
-    }
-    .article-content img {
-        @apply rounded-lg my-6 w-full h-auto;
-    }
-    .article-content figure {
-        @apply my-6;
-    }
-    .article-content figcaption {
-        @apply text-xs text-muted-foreground mt-2 text-center;
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        text-align: left;
     }
 }
 
@@ -526,4 +505,537 @@ ul[data-type="taskList"] li > div {
     content: "";
     display: table;
     clear: both;
+}
+
+/* ─── TipTap Writing & Typography Polish ─── */
+.ProseMirror {
+    outline: none !important;
+    text-align: left !important;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+    color: var(--muted-foreground);
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+    opacity: 0.55;
+    font-style: normal;
+}
+
+.ProseMirror p {
+    text-align: left;
+}
+
+.ProseMirror video {
+    border-radius: 0.75rem;
+    max-width: 100%;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* ─── TipTap TaskList & TaskItem (Checklist) Styling ─── */
+.ProseMirror ul[data-type="taskList"],
+ul[data-type="taskList"] {
+    list-style: none !important;
+    padding-left: 0 !important;
+    margin: 0.75rem 0 !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li,
+ul[data-type="taskList"] li {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 0.625rem !important;
+    margin: 0.35rem 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    list-style-type: none !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li::before,
+ul[data-type="taskList"] li::before,
+.prose ul[data-type="taskList"] > li::before {
+    display: none !important;
+    content: none !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label,
+ul[data-type="taskList"] li > label {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 1.25rem !important;
+    width: 1.25rem !important;
+    height: 1.5rem !important;
+    margin: 0 !important;
+    user-select: none !important;
+    cursor: pointer !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"],
+ul[data-type="taskList"] li > label input[type="checkbox"] {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 1.1rem !important;
+    height: 1.1rem !important;
+    border-radius: 0.3rem !important;
+    border: 1.5px solid var(--border) !important;
+    background-color: var(--card) !important;
+    cursor: pointer !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-content: center !important;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]::before,
+ul[data-type="taskList"] li > label input[type="checkbox"]::before {
+    content: "" !important;
+    width: 0.55rem !important;
+    height: 0.32rem !important;
+    transform: scale(0) rotate(-45deg) translate(1px, -1px) !important;
+    border-left: 2px solid white !important;
+    border-bottom: 2px solid white !important;
+    transition: 0.12s transform ease-in-out !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:hover,
+ul[data-type="taskList"] li > label input[type="checkbox"]:hover {
+    border-color: var(--primary) !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked,
+ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked::before,
+ul[data-type="taskList"] li > label input[type="checkbox"]:checked::before {
+    transform: scale(1) rotate(-45deg) translate(1px, -1px) !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li > div,
+ul[data-type="taskList"] li > div {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li > div > p,
+ul[data-type="taskList"] li > div > p {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.5rem !important;
+    min-height: 1.5rem !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div > p,
+ul[data-type="taskList"] li[data-checked="true"] > div > p {
+    text-decoration: line-through !important;
+    color: var(--muted-foreground) !important;
+    opacity: 0.7 !important;
+}
+
+/* ─── TipTap Callouts & Editorial Blocks ─── */
+.ProseMirror .tiptap-callout,
+.tiptap-callout {
+    position: relative;
+    margin: 1.25rem 0 !important;
+    border-radius: 0.875rem;
+    padding: 1rem 1.25rem !important;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+}
+
+.ProseMirror .tiptap-callout p,
+.tiptap-callout p {
+    margin: 0.25rem 0 !important;
+    line-height: 1.5 !important;
+}
+
+.ProseMirror .tiptap-callout-stat,
+.tiptap-callout-stat {
+    border: 1px solid var(--border) !important;
+    background-color: var(--card) !important;
+    padding: 1.25rem !important;
+}
+
+.ProseMirror .tiptap-callout-stat p:first-child,
+.tiptap-callout-stat p:first-child {
+    font-family: var(--font-mono, monospace) !important;
+    font-size: 1.875rem !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.025em !important;
+    color: var(--primary) !important;
+    line-height: 1.15 !important;
+    margin-bottom: 0.35rem !important;
+}
+
+.ProseMirror .tiptap-callout-stat p:nth-child(2),
+.tiptap-callout-stat p:nth-child(2) {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: var(--foreground) !important;
+    line-height: 1.35 !important;
+}
+
+.ProseMirror .tiptap-callout-stat p:last-child,
+.tiptap-callout-stat p:last-child {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    font-size: 0.75rem !important;
+    font-style: italic !important;
+    color: var(--muted-foreground) !important;
+    margin-top: 0.15rem !important;
+}
+
+.ProseMirror .tiptap-callout-quote,
+.tiptap-callout-quote {
+    border-left: 4px solid var(--primary) !important;
+    background-color: var(--card) !important;
+    padding: 1.25rem 1.5rem !important;
+    border-top: 1px solid var(--border) !important;
+    border-right: 1px solid var(--border) !important;
+    border-bottom: 1px solid var(--border) !important;
+}
+
+.ProseMirror .tiptap-callout-quote p:first-child,
+.tiptap-callout-quote p:first-child {
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif !important;
+    font-size: 1.125rem !important;
+    font-style: italic !important;
+    line-height: 1.65 !important;
+    color: var(--foreground) !important;
+    margin-bottom: 0.4rem !important;
+}
+
+.ProseMirror .tiptap-callout-quote p:last-child,
+.tiptap-callout-quote p:last-child {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    color: var(--muted-foreground) !important;
+}
+
+.ProseMirror .tiptap-callout-timeline,
+.tiptap-callout-timeline {
+    border: 1px solid var(--border) !important;
+    border-left: 4px solid var(--primary) !important;
+    background-color: var(--card) !important;
+    padding: 1rem 1.25rem !important;
+}
+
+.ProseMirror .tiptap-callout-timeline p:first-child,
+.tiptap-callout-timeline p:first-child {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    color: var(--primary) !important;
+    margin-bottom: 0.35rem !important;
+}
+
+.ProseMirror .tiptap-callout-timeline p:not(:first-child),
+.tiptap-callout-timeline p:not(:first-child) {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.5 !important;
+}
+
+.ProseMirror .tiptap-callout-source_archive,
+.tiptap-callout-source_archive {
+    border: 1px solid rgba(14, 165, 233, 0.4) !important;
+    background-color: rgba(14, 165, 233, 0.05) !important;
+    padding: 1rem 1.25rem !important;
+}
+
+.ProseMirror .tiptap-callout-breaking,
+.tiptap-callout-breaking {
+    border-left: 4px solid #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.08) !important;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.ProseMirror .tiptap-callout-breaking p,
+.tiptap-callout-breaking p {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    line-height: 1.45 !important;
+}
+
+.ProseMirror .tiptap-callout-tip,
+.tiptap-callout-tip {
+    border-left: 4px solid #3b82f6 !important;
+    background-color: rgba(59, 130, 246, 0.08) !important;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.ProseMirror .tiptap-callout-tip p,
+.tiptap-callout-tip p {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    line-height: 1.45 !important;
+}
+
+.ProseMirror .tiptap-callout-warning,
+.tiptap-callout-warning {
+    border-left: 4px solid #f59e0b !important;
+    background-color: rgba(245, 158, 11, 0.08) !important;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.ProseMirror .tiptap-callout-warning p,
+.tiptap-callout-warning p {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    line-height: 1.45 !important;
+}
+
+.ProseMirror .tiptap-callout-factcheck,
+.tiptap-callout-factcheck {
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+    background-color: rgba(16, 185, 129, 0.07) !important;
+}
+
+.ProseMirror .tiptap-callout-factcheck p,
+.tiptap-callout-factcheck p {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    line-height: 1.45 !important;
+}
+
+.ProseMirror .tiptap-callout-editor_note,
+.tiptap-callout-editor_note {
+    border: 1.5px dashed rgba(139, 92, 246, 0.5) !important;
+    background-color: rgba(139, 92, 246, 0.06) !important;
+}
+
+.ProseMirror .tiptap-callout-editor_note p,
+.tiptap-callout-editor_note p {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    line-height: 1.45 !important;
+}
+
+.ProseMirror .tiptap-callout-tldr,
+.tiptap-callout-tldr {
+    border: 1px solid var(--border) !important;
+    background-color: var(--card) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ProseMirror .tiptap-callout-tldr p,
+.tiptap-callout-tldr p {
+    font-family: var(--font-sans, system-ui, sans-serif) !important;
+    line-height: 1.45 !important;
+}
+
+/* ─── Newsroom Editorial & Regional Typography (Naxatra News Style) ─── */
+.font-hindi {
+    font-family: 'Mukta', 'Noto Sans Devanagari', var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-headline {
+    font-family: 'Khand', 'Mukta', var(--font-serif), Georgia, serif;
+}
+
+.article-content {
+    font-family: 'Mukta', 'Noto Sans Devanagari', var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    color: var(--foreground);
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Wikipedia-grade Editorial Body Typography ─── */
+.article-content p {
+    text-align: left;
+    font-size: 1.0625rem; /* ~17px base */
+    line-height: 1.78;
+    letter-spacing: 0.01em;
+    margin-bottom: 1.25rem;
+    color: var(--foreground);
+}
+
+@media (min-width: 640px) {
+    .article-content p {
+        font-size: 1.125rem; /* ~18px tablet & desktop for supreme legibility */
+        line-height: 1.8;
+        margin-bottom: 1.35rem;
+    }
+}
+
+/* Dynamic Font Sizing (Reader comfort mode: Normal / Large / Extra Large) */
+[data-font-size="normal"] .article-content p,
+.article-content[data-font-size="normal"] p {
+    font-size: 1.0625rem;
+    line-height: 1.78;
+}
+@media (min-width: 640px) {
+    [data-font-size="normal"] .article-content p,
+    .article-content[data-font-size="normal"] p {
+        font-size: 1.125rem;
+        line-height: 1.8;
+    }
+}
+
+[data-font-size="large"] .article-content p,
+.article-content[data-font-size="large"] p {
+    font-size: 1.25rem !important; /* 20px */
+    line-height: 1.92 !important;
+}
+@media (min-width: 640px) {
+    [data-font-size="large"] .article-content p,
+    .article-content[data-font-size="large"] p {
+        font-size: 1.3125rem !important; /* 21px */
+        line-height: 1.95 !important;
+    }
+}
+
+[data-font-size="xlarge"] .article-content p,
+.article-content[data-font-size="xlarge"] p {
+    font-size: 1.375rem !important; /* 22px */
+    line-height: 2 !important;
+}
+@media (min-width: 640px) {
+    [data-font-size="xlarge"] .article-content p,
+    .article-content[data-font-size="xlarge"] p {
+        font-size: 1.45rem !important; /* ~23px */
+        line-height: 2.05 !important;
+    }
+}
+
+/* Callout paragraphs must stay compact, crisp and identical in both editor & reader */
+.article-content .tiptap-callout p,
+.ProseMirror .tiptap-callout p {
+    font-size: 0.95rem !important;
+    line-height: 1.55 !important;
+    margin: 0.35rem 0 !important;
+}
+
+@media (min-width: 640px) {
+    .article-content .tiptap-callout p,
+    .ProseMirror .tiptap-callout p {
+        font-size: 1rem !important;
+        line-height: 1.58 !important;
+    }
+}
+
+/* Article headings (Clean Naxatra News Reference) */
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4 {
+    font-family: 'Mukta', 'Noto Sans Devanagari', var(--font-sans), sans-serif;
+    letter-spacing: -0.01em;
+    color: var(--foreground);
+    text-align: left;
+}
+
+.article-content h1 {
+    font-size: 1.65rem;
+    line-height: 1.35;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.85rem;
+}
+
+.article-content h2 {
+    font-size: 1.35rem;
+    line-height: 1.38;
+    font-weight: 700;
+    margin-top: 1.85rem;
+    margin-bottom: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .article-content h2 {
+        font-size: 1.45rem;
+    }
+}
+
+.article-content h3 {
+    font-size: 1.2rem;
+    line-height: 1.4;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    margin-bottom: 0.65rem;
+}
+
+.dark .article-content h3 {
+    color: #f87171;
+}
+
+/* In-Article Links */
+.article-content a {
+    color: #dc2626;
+    text-decoration: underline;
+    text-decoration-color: rgba(220, 38, 38, 0.4);
+    text-underline-offset: 3px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.article-content a:hover {
+    color: #b91c1c;
+    text-decoration-color: #b91c1c;
+}
+
+.dark .article-content a {
+    color: #f87171;
+    text-decoration-color: rgba(248, 113, 113, 0.4);
+}
+
+.dark .article-content a:hover {
+    color: #fca5a5;
+    text-decoration-color: #fca5a5;
+}
+
+/* Editorial Blockquotes */
+.article-content blockquote {
+    border-left: 4px solid #dc2626;
+    background: linear-gradient(to right, rgba(220, 38, 38, 0.04), transparent);
+    padding: 1.15rem 1.35rem;
+    border-radius: 0 0.875rem 0.875rem 0;
+    margin: 1.85rem 0;
+    font-size: 1.1875rem;
+    line-height: 1.75;
+    color: var(--foreground);
+    font-weight: 500;
+}
+
+@media (min-width: 768px) {
+    .article-content blockquote {
+        font-size: 1.28rem;
+        line-height: 1.75;
+    }
+}
+
+/* Bullet & Ordered lists inside article */
+.article-content ul:not([data-type="taskList"]) {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1.45rem;
+    line-height: 1.85;
+}
+
+.article-content ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+    margin-bottom: 1.45rem;
+    line-height: 1.85;
+}
+
+.article-content li {
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.85;
+}
+
+@media (min-width: 640px) {
+    .article-content li {
+        font-size: 1.1875rem;
+    }
 }

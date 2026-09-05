@@ -3,7 +3,6 @@
 
 export interface MediaItem {
   id: string;
-  tenant_id: number;
   uploader_id: number;
   filename: string;
   original_name: string;

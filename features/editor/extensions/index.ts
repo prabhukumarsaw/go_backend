@@ -21,8 +21,11 @@ import { Columns, Column } from "./columns-node";
 import { PollNode } from "./poll-node";
 import { CustomTableCell, CustomTableHeader } from "./custom-table-cell";
 import { Iframe } from "./iframe-node";
+import { AudioNode } from "./audio-node";
+import { VideoNode } from "./video-node";
+import { CalloutNode } from "./callout-node";
 
-export { Iframe, ResizableImage, Columns, Column, PollNode, CustomTableCell, CustomTableHeader };
+export { Iframe, ResizableImage, Columns, Column, PollNode, CustomTableCell, CustomTableHeader, AudioNode, VideoNode, CalloutNode };
 
 export function getEditorExtensions() {
   return [
@@ -31,6 +34,9 @@ export function getEditorExtensions() {
         levels: [1, 2, 3],
       },
     }),
+    AudioNode,
+    VideoNode,
+    CalloutNode,
     Placeholder.configure({
       placeholder: "Write your article body here… Use markdown or toolbar to format.",
     }),

@@ -12,6 +12,7 @@ import {
   IconSend,
   IconArchive,
   IconEye,
+  IconExternalLink,
   IconLoader2,
   IconAdjustments,
   IconDotsVertical,
@@ -93,16 +94,17 @@ export default function EditArticlePage({
   useEffect(() => {
     if (article) {
       reset({
-        title: article.title,
+        title: article.title || "",
         language: article.language || "en",
         excerpt: article.excerpt || "",
-        is_breaking: article.is_breaking || false,
-        is_featured: article.is_featured || false,
-        is_national: article.is_national || false,
+        is_breaking: Boolean(article.is_breaking),
+        is_featured: Boolean(article.is_featured),
+        is_national: Boolean(article.is_national),
         meta_title: article.meta_title || "",
         meta_description: article.meta_description || "",
         featured_image: article.featured_image || "",
         category_ids: article.category_ids || [],
+        tag_ids: [],
       });
       if (article.body) {
         setEditorContent(article.body);
@@ -110,36 +112,67 @@ export default function EditArticlePage({
     }
   }, [article, reset]);
 
+  const onInvalid = (errors: any) => {
+    console.warn("Validation error on save:", errors);
+    const firstField = Object.keys(errors)[0];
+    const firstError = errors[firstField];
+    toast.error(firstError?.message || `Please complete required fields (${firstField})`);
+  };
+
   const handleStatusTransition = async (newStatus: string) => {
-    await transition.mutateAsync({ id: articleId, status: newStatus });
-    toast.success(`Article moved to ${newStatus}`);
+    try {
+      await transition.mutateAsync({ id: articleId, status: newStatus });
+      toast.success(`Article moved to ${newStatus}`);
+      if (newStatus === "published" || newStatus === "archived") {
+        router.push("/panel/articles");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || `Failed to transition article to ${newStatus}`);
+    }
   };
 
   const handleSave = async (data: ArticleFormData) => {
     try {
+      const currentBody = editorRef.current ? editorRef.current.getJSON() : (editorContent || article?.body || { type: "doc", content: [] });
       await updateArticle.mutateAsync({
         id: articleId,
         input: {
           ...data,
-          body: editorContent,
+          body: currentBody,
         },
       });
       toast.success("Changes saved.");
     } catch (err: any) {
-      toast.error(err.message || "Failed to save story");
+      toast.error(err?.message || "Failed to save story");
     }
   };
 
   const handleSaveAndPublish = async (data: ArticleFormData) => {
     try {
+      const currentBody = editorRef.current ? editorRef.current.getJSON() : (editorContent || article?.body || { type: "doc", content: [] });
       await updateArticle.mutateAsync({
         id: articleId,
-        input: { ...data, body: editorContent },
+        input: { ...data, body: currentBody },
       });
-      await transition.mutateAsync({ id: articleId, status: "published" });
-      toast.success("Article published live!");
+      const isAlreadyPublished = article?.status === "published";
+      if (!isAlreadyPublished) {
+        await transition.mutateAsync({ id: articleId, status: "published" });
+      }
+      toast.success(
+        isAlreadyPublished ? "Article updated live!" : "Article published successfully!",
+        {
+          description: "Your story is live for readers.",
+          action: article?.slug
+            ? {
+                label: "View Live",
+                onClick: () => window.open(`/news/${article.slug}`, "_blank"),
+              }
+            : undefined,
+        }
+      );
+      router.push("/panel/articles");
     } catch (err: any) {
-      toast.error(err.message || "Failed to publish");
+      toast.error(err?.message || "Failed to publish");
     }
   };
 
@@ -170,9 +203,23 @@ export default function EditArticlePage({
           </Button>
           <ArticleStatusBadge status={article.status} />
           {article.slug && (
-            <Button variant="ghost" size="sm" className="hidden sm:flex h-7 text-xs text-muted-foreground gap-1" render={<Link href={`/news/${article.slug}`} target="_blank" />}>
-              <IconEye className="h-3 w-3" />
-              Preview
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden sm:flex h-7 text-xs text-muted-foreground hover:text-foreground gap-1"
+              render={<Link href={`/news/${article.slug}`} target="_blank" />}
+            >
+              {article.status === "published" ? (
+                <>
+                  <IconExternalLink className="h-3 w-3" />
+                  View Live
+                </>
+              ) : (
+                <>
+                  <IconEye className="h-3 w-3" />
+                  Preview
+                </>
+              )}
             </Button>
           )}
         </div>
@@ -183,7 +230,7 @@ export default function EditArticlePage({
             size="sm"
             variant="outline"
             className="h-8 text-xs font-semibold gap-1.5 shadow-xs"
-            onClick={handleSubmit(handleSave)}
+            onClick={handleSubmit(handleSave, onInvalid)}
             disabled={updateArticle.isPending || transition.isPending}
           >
             {updateArticle.isPending ? (
@@ -199,7 +246,7 @@ export default function EditArticlePage({
             <Button
               size="sm"
               className="h-8 text-xs font-semibold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-              onClick={handleSubmit(handleSaveAndPublish)}
+              onClick={handleSubmit(handleSaveAndPublish, onInvalid)}
               disabled={updateArticle.isPending || transition.isPending}
             >
               {transition.isPending ? <IconLoader2 className="h-3.5 w-3.5 animate-spin" /> : <IconSend className="h-3.5 w-3.5" />}
@@ -210,7 +257,7 @@ export default function EditArticlePage({
             <Button
               size="sm"
               className="h-8 text-xs font-semibold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-              onClick={handleSubmit(handleSaveAndPublish)}
+              onClick={handleSubmit(handleSaveAndPublish, onInvalid)}
               disabled={updateArticle.isPending || transition.isPending}
             >
               {transition.isPending ? <IconLoader2 className="h-3.5 w-3.5 animate-spin" /> : <IconCheck className="h-3.5 w-3.5" />}
@@ -221,7 +268,7 @@ export default function EditArticlePage({
             <Button
               size="sm"
               className="h-8 text-xs font-semibold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-              onClick={handleSubmit(handleSaveAndPublish)}
+              onClick={handleSubmit(handleSaveAndPublish, onInvalid)}
               disabled={updateArticle.isPending || transition.isPending}
             >
               {transition.isPending ? <IconLoader2 className="h-3.5 w-3.5 animate-spin" /> : <IconSend className="h-3.5 w-3.5" />}
@@ -318,22 +365,27 @@ export default function EditArticlePage({
       <MediaPicker
         open={isMediaPickerOpen}
         onOpenChange={setIsMediaPickerOpen}
-        onSelect={({ url, alt }) => {
+        onSelect={({ url, alt, isVideo }) => {
           if (mediaPickerTarget === "featured") {
             form.setValue("featured_image", url, { shouldDirty: true, shouldValidate: true });
           } else if (mediaPickerTarget === "editor") {
             if (editorRef.current) {
               const ed = editorRef.current;
-              ed.chain()
-                .focus()
-                .insertContent({
-                  type: "image",
-                  attrs: {
-                    src: url,
-                    alt: alt || "",
-                  },
-                })
-                .run();
+              const isVideoFile = isVideo || /\.(mp4|webm|mov)$/i.test(url);
+              if (isVideoFile) {
+                ed.chain().focus().setVideo({ src: url, title: alt || "Short Video" }).run();
+              } else {
+                ed.chain()
+                  .focus()
+                  .insertContent({
+                    type: "image",
+                    attrs: {
+                      src: url,
+                      alt: alt || "",
+                    },
+                  })
+                  .run();
+              }
             }
           }
         }}

@@ -4,6 +4,7 @@ import * as React from "react";
 import { type Editor } from "@tiptap/react";
 import { useEditorMetrics } from "../hooks/use-editor-metrics";
 import { EditorShortcutsDialog } from "./editor-shortcuts-dialog";
+import { TableOfContentsSheet } from "./table-of-contents-sheet";
 import { IconBook2, IconFileText } from "@tabler/icons-react";
 
 interface EditorStatusBarProps {
@@ -20,6 +21,10 @@ export function EditorStatusBar({ editor, lastSaved }: EditorStatusBarProps) {
     <div className="flex flex-wrap items-center justify-between gap-3 border-t bg-muted/20 px-4 py-2 text-[11px] text-muted-foreground backdrop-blur-xs select-none">
       {/* Metrics Chips */}
       <div className="flex items-center gap-2 font-mono sm:gap-3">
+        <TableOfContentsSheet editor={editor} variant="statusbar" />
+
+        <div className="h-3 w-px bg-border/60" />
+
         <div className="flex items-center gap-1.5 rounded-full bg-background/80 border px-2 py-0.5 shadow-2xs">
           <IconFileText className="h-3 w-3 text-muted-foreground" />
           <span>

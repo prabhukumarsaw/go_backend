@@ -4,13 +4,9 @@ import type { ApiResponse } from "@/types/api";
 export interface RegionalReadership {
   region_id?: number;
   region_name?: string;
-  tenant_id?: number;
-  tenant_name?: string;
   views: number;
   articles: number;
 }
-
-export type TenantReadership = RegionalReadership;
 
 export interface CategoryReadership {
   category_name: string;
@@ -29,7 +25,6 @@ export interface AuthorLeaderboard {
   author_id: number;
   display_name: string;
   bureau_name?: string;
-  tenant_name?: string;
   total_views: number;
   articles: number;
 }
@@ -37,6 +32,8 @@ export interface AuthorLeaderboard {
 export interface AnalyticsOverview {
   total_articles: number;
   total_published: number;
+  total_drafts?: number;
+  total_review?: number;
   total_views: number;
   total_breaking: number;
   total_subscribers: number;

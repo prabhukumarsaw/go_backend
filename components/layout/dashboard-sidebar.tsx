@@ -165,6 +165,32 @@ export function DashboardSidebar() {
     }
   }
 
+  if (!seenHrefs.has("/panel/reports")) {
+    seenHrefs.add("/panel/reports");
+    editorialMenus.push({
+      id: 991,
+      name: "reports",
+      label: "Reports",
+      icon: "bar-chart",
+      path: "/panel/reports",
+      sort_order: 8,
+      is_active: true,
+    });
+  }
+
+  if (!seenHrefs.has("/panel/audit")) {
+    seenHrefs.add("/panel/audit");
+    governanceMenus.push({
+      id: 992,
+      name: "audit",
+      label: "Audit Log",
+      icon: "shield",
+      path: "/panel/audit",
+      sort_order: 14,
+      is_active: true,
+    });
+  }
+
   function isActive(href: string) {
     if (href === "/panel/dashboard") return pathname === "/panel/dashboard" || pathname === "/dashboard";
     return pathname.startsWith(href);

@@ -28,8 +28,10 @@ export function listArticles(filter?: ListArticlesFilter) {
   });
 }
 
-export function getArticleBySlug(slug: string, language = "en") {
-  return apiClient.get<ApiResponse<Article>>(`/articles/${slug}`, { language });
+export function getArticleBySlug(slug: string, language?: string) {
+  const params: Record<string, string> = {};
+  if (language) params.language = language;
+  return apiClient.get<ApiResponse<Article>>(`/articles/${slug}`, params);
 }
 
 export function listBreakingNews(limit = 10) {
@@ -122,8 +124,20 @@ export function getArticleVersions(id: string) {
   );
 }
 
-export function createCategory(data: { name: string; slug?: string }) {
+export interface CreateCategoryPayload {
+  name: string;
+  slug?: string;
+  parent_id?: number | null;
+  sort_order?: number;
+  icon?: string;
+}
+
+export function createCategory(data: CreateCategoryPayload) {
   return apiClient.post<ApiResponse<Category>>("/studio/categories", data);
+}
+
+export function updateCategory(id: number, data: CreateCategoryPayload) {
+  return apiClient.put<ApiResponse<Category>>(`/studio/categories/${id}`, data);
 }
 
 export function deleteCategory(id: number) {
@@ -132,7 +146,6 @@ export function deleteCategory(id: number) {
 
 export interface Tag {
   id: number;
-  tenant_id: number;
   name: string;
   slug: string;
   usage_count?: number;
@@ -140,6 +153,11 @@ export interface Tag {
 
 export function listTags() {
   return apiClient.get<ApiResponse<Tag[]>>("/tags");
+}
+
+/** Fetch top N tags sorted by usage_count (most used = trending topics) */
+export function listTrendingTags(limit = 8) {
+  return apiClient.get<ApiResponse<Tag[]>>("/tags", { sort: "usage_count", limit });
 }
 
 export function createTag(data: { name: string; slug?: string }) {

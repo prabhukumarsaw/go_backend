@@ -1,29 +1,35 @@
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  IconArrowLeft,
-  IconClock,
-  IconEye,
-  IconBolt,
-  IconStar,
-  IconChevronRight,
-} from "@tabler/icons-react";
+import { IconTag } from "@tabler/icons-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArticleRenderer } from "@/features/editor/renderer/article-renderer";
+import { ArticleRenderer } from "@/features/editor/renderer";
 import { LiveBlogFeed } from "@/components/liveblog/live-blog-feed";
 import { NewsArticleJsonLd } from "@/components/seo/news-article-jsonld";
-import { ArticleShareAndTracker } from "@/components/article/article-share-and-tracker";
-import { getArticleBySlug, listArticles } from "@/lib/api/articles";
+import {
+  ArticleHeader,
+  ArticleHero,
+  ArticleToc,
+  ArticleAuthorCard,
+  ArticleReadAlso,
+  ArticleSidebar,
+  ArticleRelated,
+  DesktopVerticalShare,
+} from "@/components/article";
+import {
+  getArticleBySlug,
+  listArticles,
+  listTrendingNews,
+} from "@/lib/api/articles";
 import { siteConfig } from "@/config/site";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,
@@ -35,7 +41,8 @@ export async function generateMetadata({
     if (!article) return { title: "Article Not Found" };
 
     const title = article.meta_title || article.title;
-    const description = article.meta_description || article.excerpt || siteConfig.description;
+    const description =
+      article.meta_description || article.excerpt || siteConfig.description;
 
     return {
       title,
@@ -46,7 +53,9 @@ export async function generateMetadata({
         type: "article",
         publishedTime: article.published_at,
         modifiedTime: article.updated_at,
-        images: article.featured_image ? [article.featured_image] : [`${siteConfig.url}/og-default.jpg`],
+        images: article.featured_image
+          ? [article.featured_image]
+          : [`${siteConfig.url}/og-default.jpg`],
         url: `${siteConfig.url}/news/${slug}`,
         siteName: siteConfig.name,
       },
@@ -54,7 +63,9 @@ export async function generateMetadata({
         card: "summary_large_image",
         title,
         description,
-        images: article.featured_image ? [article.featured_image] : [`${siteConfig.url}/og-default.jpg`],
+        images: article.featured_image
+          ? [article.featured_image]
+          : [`${siteConfig.url}/og-default.jpg`],
       },
     };
   } catch {
@@ -69,6 +80,31 @@ function estimateReadingTime(body: any): number {
     return Math.max(1, Math.ceil(words / 200));
   } catch {
     return 3;
+  }
+}
+
+function extractHeadings(
+  content: any
+): Array<{ id: string; text: string; level: number }> {
+  try {
+    const doc = typeof content === "string" ? JSON.parse(content) : content;
+    if (!doc?.content || !Array.isArray(doc.content)) return [];
+    const headings: Array<{ id: string; text: string; level: number }> = [];
+    for (const node of doc.content) {
+      if (node.type === "heading" && node.content) {
+        const text = node.content.map((c: any) => c.text || "").join("").trim();
+        if (text) {
+          const id = text
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "");
+          headings.push({ id, text, level: node.attrs?.level || 2 });
+        }
+      }
+    }
+    return headings;
+  } catch {
+    return [];
   }
 }
 
@@ -88,177 +124,138 @@ export default async function PublicArticlePage({ params }: ArticlePageProps) {
   }
 
   const primaryCategory = article.categories?.[0] || "News";
-  const categorySlug = primaryCategory.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const categorySlug = primaryCategory
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-");
 
-  // Fetch related articles from same category
-  let relatedArticles: any[] = [];
-  try {
-    const relRes = await listArticles({
-      category: categorySlug,
-      per_page: 4,
-    });
-    relatedArticles = (relRes?.data || []).filter(
-      (a: any) => a.id !== article.id
-    );
-  } catch {
-    // Fallback
+  // Fetch related, trending, and latest stories in parallel
+  const [relResult, trendResult, latResult] = await Promise.allSettled([
+    listArticles({ category: categorySlug, per_page: 6 }),
+    listTrendingNews(5),
+    listArticles({ per_page: 6 }),
+  ]);
+
+  const relatedArticles = (
+    relResult.status === "fulfilled" ? relResult.value?.data || [] : []
+  ).filter((a: any) => a.id !== article.id);
+
+  let trendingArticles =
+    trendResult.status === "fulfilled" ? trendResult.value?.data || [] : [];
+  if (trendingArticles.length === 0 && latResult.status === "fulfilled") {
+    trendingArticles = latResult.value?.data || [];
   }
 
-  const publishedDate = article.published_at
-    ? format(new Date(article.published_at), "MMMM d, yyyy · h:mm a")
-    : format(new Date(article.created_at), "MMMM d, yyyy");
+  const latestArticles = (
+    latResult.status === "fulfilled" ? latResult.value?.data || [] : []
+  ).filter((a: any) => a.id !== article.id);
 
+  const readAlsoArticle = relatedArticles[0] || trendingArticles[0];
   const readingTime = estimateReadingTime(article.body);
+  const headings = extractHeadings(article.body);
+  const authorName = article.author_name || "Digital Desk Bureau";
 
   return (
-    <article className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-fade-in-up">
+    <div className="w-full max-w-[1360px] xl:max-w-[1400px] 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 space-y-8 animate-fade-in-up font-hindi">
       <NewsArticleJsonLd article={article} />
 
-      {/* ─── Breadcrumb Navigation ─── */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
-        <Link href="/" className="hover:text-foreground transition-colors">
-          Home
-        </Link>
-        <IconChevronRight className="h-3 w-3 text-muted-foreground/60" />
-        <Link href={`/${categorySlug}`} className="hover:text-foreground transition-colors capitalize">
-          {primaryCategory}
-        </Link>
-        <IconChevronRight className="h-3 w-3 text-muted-foreground/60" />
-        <span className="truncate max-w-[200px] sm:max-w-xs text-foreground font-medium">
-          {article.title}
-        </span>
-      </nav>
-
-      {/* ─── Article Header ─── */}
-      <header className="space-y-4 pb-6 border-b">
-        <div className="flex flex-wrap items-center gap-2">
-          {article.is_breaking && (
-            <Badge variant="destructive" className="gap-1 text-[11px] font-mono uppercase bg-rose-600 font-bold">
-              <IconBolt className="h-3 w-3" />
-              Breaking Alert
-            </Badge>
-          )}
-          {article.is_featured && (
-            <Badge variant="secondary" className="gap-1 text-[11px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
-              <IconStar className="h-3 w-3 fill-amber-500 text-amber-500" />
-              Editorial Spotlight
-            </Badge>
-          )}
-          <Link href={`/${categorySlug}`}>
-            <Badge variant="outline" className="capitalize text-xs font-semibold hover:bg-muted transition-colors cursor-pointer">
-              {primaryCategory}
-            </Badge>
-          </Link>
-        </div>
-
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl leading-tight font-serif text-foreground">
-          {article.title}
-        </h1>
-
-        {article.excerpt && (
-          <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed font-sans font-normal">
-            {article.excerpt}
-          </p>
-        )}
-
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-3 text-xs text-muted-foreground border-t border-border/50">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-foreground">
-              By {article.author_name || "Newsroom Bureau Staff"}
-            </span>
-            <span>·</span>
-            <time dateTime={article.published_at || article.created_at}>
-              {publishedDate}
-            </time>
-          </div>
-
-          <div className="flex items-center gap-3 font-mono text-[11px]">
-            <span className="flex items-center gap-1">
-              <IconClock className="h-3.5 w-3.5" />
-              {readingTime} min read
-            </span>
-            {(article.view_count || 0) > 0 && (
-              <span className="flex items-center gap-1">
-                <IconEye className="h-3.5 w-3.5" />
-                {article.view_count.toLocaleString()} reads
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Dynamic Social Sharing & Device Affinity Tracker */}
-        <ArticleShareAndTracker
-          articleId={article.id}
-          articleTitle={article.title}
-          articleSlug={article.slug}
-          categories={article.categories || [primaryCategory]}
-        />
-      </header>
-
-      {/* ─── Featured Hero Image ─── */}
-      {article.featured_image && (
-        <figure className="my-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={article.featured_image}
-            alt={article.title}
-            className="w-full rounded-2xl object-cover aspect-video shadow-md border"
+      {/* ─── Main Responsive Newsroom Layout ─── */}
+      <div className="flex flex-col lg:flex-row gap-6 xl:gap-8 items-start justify-center">
+        {/* ─── Left Sticky Share Column ─── */}
+        <div className="hidden lg:flex flex-col items-center sticky top-24 shrink-0 w-11 pt-1 z-20">
+          <DesktopVerticalShare
+            articleTitle={article.title}
+            articleSlug={article.slug}
           />
-          {article.caption && (
-            <figcaption className="text-xs text-center text-muted-foreground mt-2 italic font-serif">
-              {article.caption}
-            </figcaption>
-          )}
-        </figure>
-      )}
+        </div>
 
-      {/* ─── Optimized Server-Rendered Article Body ─── */}
-      <div className="py-4 article-content prose dark:prose-invert max-w-none">
-        <ArticleRenderer content={article.body} />
-      </div>
+        {/* ─── Center / Main Content Column (Clean Left Alignment & Optimal Reading Width) ─── */}
+        <main
+          id="article-reading-container"
+          data-font-size="normal"
+          className="w-full lg:flex-1 max-w-[820px] xl:max-w-[860px] min-w-0 space-y-5"
+        >
+          <article className="relative space-y-4">
+            {/* Header: Breadcrumb, Kicker, Headline, Excerpt, Byline & Share Bar */}
+            <ArticleHeader
+              article={article}
+              primaryCategory={primaryCategory}
+              categorySlug={categorySlug}
+              readingTime={readingTime}
+            />
 
-      {/* ─── Real-time Live Blog Coverage Timeline (Auto-polling) ─── */}
-      <LiveBlogFeed articleId={article.id} />
+            {/* Featured Hero Image with Credit */}
+            <ArticleHero
+              featuredImage={article.featured_image}
+              title={article.title}
+              caption={article.caption}
+            />
 
-      {/* ─── Related Stories in same category ─── */}
-      {relatedArticles.length > 0 && (
-        <section className="pt-10 border-t space-y-4">
-          <h2 className="text-2xl font-bold tracking-tight font-serif">
-            More in {primaryCategory}
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {relatedArticles.map((rel) => (
-              <Card
-                key={rel.id}
-                className="group border bg-card hover:shadow-md transition-all overflow-hidden flex flex-col rounded-xl"
-              >
-                {rel.featured_image && (
-                  <div className="aspect-video bg-muted overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={rel.featured_image}
-                      alt={rel.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+            {/* Content Stream with Wikipedia Readability */}
+            <div className="space-y-5 pt-1 text-left">
+              {/* Story Outline (if headings exist) */}
+              <ArticleToc headings={headings} />
+
+              {/* Server-Rendered Article Body */}
+              <div className="reading-stream w-full text-left">
+                <ArticleRenderer content={article.body} />
+              </div>
+
+              {/* In-Article "Read Also" Callout Box */}
+              {readAlsoArticle && (
+                <ArticleReadAlso
+                  title={readAlsoArticle.title}
+                  slug={readAlsoArticle.slug}
+                  category={primaryCategory}
+                />
+              )}
+
+              {/* Article Tags Cloud */}
+              {article.categories && article.categories.length > 0 && (
+                <div className="pt-4 border-t border-border/70">
+                  <div className="flex items-center gap-2 mb-2.5 text-xs font-bold text-muted-foreground font-hindi">
+                    <IconTag className="h-3.5 w-3.5 text-red-600" />
+                    <span>संबंधित विषय / Tags:</span>
                   </div>
-                )}
-                <CardContent className="p-4 space-y-2 flex-1 flex flex-col justify-between">
-                  <Link href={`/news/${rel.slug}`}>
-                    <h3 className="font-bold text-sm line-clamp-2 hover:underline font-serif leading-snug">
-                      {rel.title}
-                    </h3>
-                  </Link>
-                  <p className="text-[11px] text-muted-foreground font-mono">
-                    {rel.published_at
-                      ? format(new Date(rel.published_at), "MMM d, yyyy")
-                      : "Recent"}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-      )}
-    </article>
+                  <div className="flex flex-wrap gap-2">
+                    {article.categories.map((cat, i) => (
+                      <Link
+                        key={i}
+                        href={`/${cat.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                      >
+                        <Badge
+                          variant="secondary"
+                          className="cursor-pointer hover:bg-red-500/10 hover:text-red-600 transition-colors px-3 py-1 text-xs font-medium font-hindi"
+                        >
+                          #{cat}
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Author Bio Box */}
+              <ArticleAuthorCard authorName={authorName} />
+
+              {/* Real-time Live Blog Coverage Timeline */}
+              <LiveBlogFeed articleId={article.id} />
+
+              {/* ─── Bottom Section: Related Stories in Same Category (Reference Screenshot 4) ─── */}
+              <ArticleRelated
+                articles={relatedArticles}
+                primaryCategory={primaryCategory}
+                categorySlug={categorySlug}
+              />
+            </div>
+          </article>
+        </main>
+
+        {/* ─── Right Column: Sticky Newsroom Sidebar (Reference Screenshot 2, 3, 4) ─── */}
+        <ArticleSidebar
+          trendingArticles={trendingArticles}
+          latestArticles={latestArticles}
+        />
+      </div>
+    </div>
   );
 }
